@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vix Script</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --primary-bg: #0a0a0a;
+    --secondary-bg: #111111;
+    --card-bg: #1a1a1a;
+    --accent: #00d4ff;
+    --accent-hover: #00b8e6;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-muted: #666666;
+    --border: #333333;
+    --glow: rgba(0, 212, 255, 0.3);
+    --gradient: linear-gradient(135deg, #00d4ff, #0099cc);
+  }
+
+  body {
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 153, 204, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: pulse 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse {
+    from { opacity: 0.3; }
+    to { opacity: 0.6; }
+  }
+
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 280px;
+    background: var(--secondary-bg);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--border);
+    padding: 2rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, var(--accent), transparent);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+  }
+
+  .logo {
+    text-align: center;
+    padding: 0 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .logo h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .logo .subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .nav-menu {
+    list-style: none;
+    padding: 0 1rem;
+  }
+
+  .nav-item {
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: var(--gradient);
+    transition: width 0.3s ease;
+    border-radius: 12px;
+    opacity: 0.1;
+  }
+
+  .nav-link:hover::before,
+  .nav-link.active::before {
+    width: 100%;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--text-primary);
+    box-shadow: 0 0 20px var(--glow);
+  }
+
+  .nav-icon {
+    margin-right: 12px;
+    font-size: 1.2rem;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 2rem 3rem;
+    background: var(--primary-bg);
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .header {
+    margin-bottom: 3rem;
+  }
+
+  .header h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Executors & Scripts (mesmo estilo) */
+  .executors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+  }
+
+  .executor-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .executor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient);
+  }
+
+  .executor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px var(--glow);
+    border-color: var(--accent);
+  }
+
+  .executor-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .executor-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  .executor-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .executor-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .features-list {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .features-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  .features-list li::before {
+    content: '✓';
+    color: var(--accent);
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.8rem 2rem;
+    background: var(--gradient);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+  }
+
+  .download-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .download-btn:hover::before {
+    left: 100%;
+  }
+
+  .download-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+  }
+
+  /* Loadstring Tab */
+  .loadstring-container {
+    max-width: 800px;
+  }
+
+  .input-group {
+    margin-bottom: 2rem;
+  }
+
+  .input-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+
+  .output-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .output-header {
+    background: var(--secondary-bg);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .output-content {
+    padding: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #79c0ff;
+    min-height: 100px;
+    background: var(--primary-bg);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+  }
+
+  .btn.secondary {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .btn.secondary:hover {
+    background: var(--secondary-bg);
+    border-color: var(--accent);
+  }
+
+  /* Saved Scripts */
+  .saved-scripts {
+    margin-top: 2rem;
+  }
+
+  .saved-scripts h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+  }
+
+  .scripts-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .script-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+
+  .script-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+
+  .script-info {
+    flex: 1;
+  }
+
+  .script-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .script-url {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .script-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+
+    .sidebar {
+      width: 100%;
+      padding: 1rem 0;
+    }
+
+    .nav-menu {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 1rem;
+      gap: 0.5rem;
+    }
+
+    .nav-item {
+      flex-shrink: 0;
+      margin-bottom: 0;
+    }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.8rem 1rem;
+    }
+
+    .main-content {
+      padding: 1.5rem;
+    }
+
+    .header h2 {
+      font-size: 2rem;
+    }
+
+    .executors-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <nav class="sidebar">
+      <div class="logo">
+        <h1>Vix</h1>
+        <div class="subtitle">Script Hub</div>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="#" class="nav-link active" data-tab="executors">
+            <span class="nav-icon">⚡</span>
+            Executores
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" data-tab="scripts">
+            <span class="nav-icon">📜</span>
+            Scripts
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" data-tab="loadstring">
+            <span class="nav-icon">🔗</span>
+            Loadstring
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+      <div class="header">
+        <h2 id="page-title">Executores</h2>
+        <p id="page-description">Os melhores executores para Roblox, sem travamentos e com máxima compatibilidade.</p>
+      </div>
+
+      <!-- Executors Tab -->
+      <div id="executors" class="tab-content active">
+        <div class="executors-grid">
+          <div class="executor-card">
+            <div class="executor-header">
+              <div class="executor-icon">🔥</div>
+              <h3 class="executor-title">zClaw Executor</h3>
+            </div>
+            <p class="executor-description">O executor mais poderoso e confiável para Roblox. Sem travamentos, sem chaves, máxima compatibilidade.</p>
+            <ul class="features-list">
+              <li>100% UNC compatível</li>
+              <li>Sem necessidade de chaves</li>
+              <li>3 APIs principais integradas</li>
+              <li>Interface moderna e intuitiva</li>
+              <li>Zero travamentos garantido</li>
+            </ul>
+            <a href="https://oreofdev.github.io/Sw1ftSync/zclaw/" class="download-btn" target="_blank">
+              📥 Baixar zClaw
+            </a>
+          </div>
+
+          <div class="executor-card">
+            <div class="executor-header">
+              <div class="executor-icon">🍎</div>
+              <h3 class="executor-title">Napple Executor</h3>
+            </div>
+            <p class="executor-description">O executor mais simples e leve para Roblox. Apenas 3MB, sem travamentos, sem chaves, com TuxAI integrado.</p>
+            <ul class="features-list">
+              <li>Apenas 3MB de tamanho</li>
+              <li>CloudyAPI com updates automáticos</li>
+              <li>TuxAI integrado</li>
+              <li>Interface ultra simples</li>
+              <li>Sem necessidade de chaves</li>
+            </ul>
+            <a href="https://oreofdev.github.io/Sw1ftSync/napple/" class="download-btn" target="_blank">
+              📥 Baixar Napple
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scripts Tab -->
+      <div id="scripts" class="tab-content">
+        <div class="executors-grid">
+          <div class="executor-card">
+            <div class="executor-header">
+              <div class="executor-icon">🧠</div>
+              <h3 class="executor-title">Vix Brainrot</h3>
+            </div>
+            <p class="executor-description">
+              Script oficial do Vix Brainrot para Roblox. Clique no botão abaixo para copiar o código.
+            </p>
+            <ul class="features-list">
+              <li>Atualizações automáticas via GitHub</li>
+              <li>Rápido e otimizado</li>
+              <li>Compatível com executores modernos</li>
+            </ul>
+            <button class="download-btn" onclick="copyToClipboard(`loadstring(game:HttpGet('https://raw.githubusercontent.com/vixscripter123/Vix-scipt/refs/heads/main/Vix%20scrip.lua'))()`)">
+              📋 Copiar Script
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loadstring Tab -->
+      <div id="loadstring" class="tab-content">
+        <div class="loadstring-container">
+          <div class="input-group">
+            <label class="input-label">Cole a URL do script</label>
+            <input type="text" id="script-url" class="input-field" placeholder="https://exemplo.com/script.lua">
+          </div>
+          <button class="btn" onclick="generateLoadstring()">🔗 Gerar Loadstring</button>
+
+          <div class="output-container" style="margin-top: 2rem;">
+            <div class="output-header">
+              <span>Loadstring Gerado</span>
+              <button class="btn secondary" onclick="copyOutput()">📋 Copiar</button>
+            </div>
+            <div id="output" class="output-content">Aguardando URL...</div>
+          </div>
+
+          <button class="btn" onclick="saveScript()">💾 Salvar Script</button>
+
+          <div class="saved-scripts">
+            <h3>Scripts Salvos</h3>
+            <div id="scripts-list" class="scripts-list">
+              <p style="color: var(--text-muted);">Nenhum script salvo ainda.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Troca de abas
+    const navLinks = document.querySelectorAll('.nav-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const pageTitle = document.getElementById('page-title');
+    const pageDescription = document.getElementById('page-description');
+
+    const tabInfo = {
+      executors: {
+        title: "Executores",
+        desc: "Os melhores executores para Roblox, sem travamentos e com máxima compatibilidade."
+      },
+      scripts: {
+        title: "Scripts",
+        desc: "Scripts exclusivos prontos para você copiar e colar no executor."
+      },
+      loadstring: {
+        title: "Loadstring",
+        desc: "Cole a URL de um script e gere automaticamente o loadstring."
+      }
+    };
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const tab = link.getAttribute('data-tab');
+
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        tabContents.forEach(c => c.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+
+        // Atualiza título e descrição
+        pageTitle.textContent = tabInfo[tab].title;
+        pageDescription.textContent = tabInfo[tab].desc;
+      });
+    });
+
+    // Função para copiar texto para clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('Script copiado para a área de transferência!');
+      }).catch(err => {
+        console.error('Erro ao copiar:', err);
+        showNotification('Erro ao copiar script', 'error');
+      });
+    }
+
+    // Função para gerar loadstring
+    function generateLoadstring() {
+      const url = document.getElementById('script-url').value;
+      const output = document.getElementById('output');
+      
+      if (!url) {
+        output.textContent = 'Por favor, insira uma URL válida.';
+        return;
+      }
+
+      const loadstring = `loadstring(game:HttpGet('${url}'))()`;
+      output.textContent = loadstring;
+    }
+
+    // Função para copiar output
+    function copyOutput() {
+      const output = document.getElementById('output').textContent;
+      if (output && output !== 'Aguardando URL...' && output !== 'Por favor, insira uma URL válida.') {
+        copyToClipboard(output);
+      } else {
+        showNotification('Nenhum loadstring para copiar', 'error');
+      }
+    }
+
+    // Sistema de scripts salvos (usando memória)
+    let savedScripts = [];
+
+    function saveScript() {
+      const url = document.getElementById('script-url').value;
+      const output = document.getElementById('output').textContent;
+      
+      if (!url || !output || output === 'Aguardando URL...' || output === 'Por favor, insira uma URL válida.') {
+        showNotification('Gere um loadstring primeiro', 'error');
+        return;
+      }
+
+      const scriptName = prompt('Digite um nome para o script:');
+      if (!scriptName) return;
+
+      const script = {
+        name: scriptName,
+        url: url,
+        loadstring: output,
+        date: new Date().toLocaleDateString()
+      };
+
+      savedScripts.push(script);
+      updateScriptsList();
+      showNotification('Script salvo com sucesso!');
+    }
+
+    function updateScriptsList() {
+      const scriptsList = document.getElementById('scripts-list');
+      
+      if (savedScripts.length === 0) {
+        scriptsList.innerHTML = '<p style="color: var(--text-muted);">Nenhum script salvo ainda.</p>';
+        return;
+      }
+
+      scriptsList.innerHTML = savedScripts.map((script, index) => `
+        <div class="script-item">
+          <div class="script-info">
+            <div class="script-name">${script.name}</div>
+            <div class="script-url">${script.url}</div>
+          </div>
+          <div class="script-actions">
+            <button class="btn secondary btn-small" onclick="copyToClipboard('${script.loadstring}')">📋 Copiar</button>
+            <button class="btn secondary btn-small" onclick="deleteScript(${index})">🗑️ Excluir</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteScript(index) {
+      if (confirm('Tem certeza que deseja excluir este script?')) {
+        savedScripts.splice(index, 1);
+        updateScriptsList();
+        showNotification('Script excluído');
+      }
+    }
+
+    // Sistema de notificações
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#ff4444' : '#00d4ff'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Adicionar CSS para animações das notificações
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
