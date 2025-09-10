@@ -1,815 +1,1307 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vix Script</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-  
-  /* Reset */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  :root {
-    --primary-bg: #0a0a0a;
-    --secondary-bg: #111111;
-    --card-bg: #1a1a1a;
-    --accent: #00d4ff;
-    --accent-hover: #00b8e6;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --text-muted: #666666;
-    --border: #333333;
-    --glow: rgba(0, 212, 255, 0.3);
-    --gradient: linear-gradient(135deg, #00d4ff, #0099cc);
-  }
-
-  body {
-    background: var(--primary-bg);
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* Animated background */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0, 153, 204, 0.1) 0%, transparent 50%);
-    z-index: -1;
-    animation: pulse 4s ease-in-out infinite alternate;
-  }
-
-  @keyframes pulse {
-    from { opacity: 0.3; }
-    to { opacity: 0.6; }
-  }
-
-  .container {
-    display: flex;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    width: 280px;
-    background: var(--secondary-bg);
-    backdrop-filter: blur(10px);
-    border-right: 1px solid var(--border);
-    padding: 2rem 0;
-    position: relative;
-    transition: all 0.3s ease;
-  }
-
-  .sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 1px;
-    height: 100%;
-    background: linear-gradient(180deg, transparent, var(--accent), transparent);
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes glow {
-    from { opacity: 0.5; }
-    to { opacity: 1; }
-  }
-
-  .logo {
-    text-align: center;
-    padding: 0 2rem;
-    margin-bottom: 3rem;
-  }
-
-  .logo h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-
-  .logo .subtitle {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .nav-menu {
-    list-style: none;
-    padding: 0 1rem;
-  }
-
-  .nav-item {
-    margin-bottom: 0.5rem;
-  }
-
-  .nav-link {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .nav-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 0;
-    height: 100%;
-    background: var(--gradient);
-    transition: width 0.3s ease;
-    border-radius: 12px;
-    opacity: 0.1;
-  }
-
-  .nav-link:hover::before,
-  .nav-link.active::before {
-    width: 100%;
-  }
-
-  .nav-link:hover,
-  .nav-link.active {
-    color: var(--text-primary);
-    box-shadow: 0 0 20px var(--glow);
-  }
-
-  .nav-icon {
-    margin-right: 12px;
-    font-size: 1.2rem;
-  }
-
-  .main-content {
-    flex: 1;
-    padding: 2rem 3rem;
-    background: var(--primary-bg);
-    overflow-y: auto;
-    position: relative;
-  }
-
-  .header {
-    margin-bottom: 3rem;
-  }
-
-  .header h2 {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .header p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-  }
-
-  .tab-content {
-    display: none;
-  }
-
-  .tab-content.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Executors & Scripts (mesmo estilo) */
-  .executors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-  }
-
-  .executor-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .executor-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--gradient);
-  }
-
-  .executor-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px var(--glow);
-    border-color: var(--accent);
-  }
-
-  .executor-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .executor-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--gradient);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    font-size: 1.5rem;
-    color: white;
-  }
-
-  .executor-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-
-  .executor-description {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-  }
-
-  .features-list {
-    list-style: none;
-    margin-bottom: 2rem;
-  }
-
-  .features-list li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-  }
-
-  .features-list li::before {
-    content: '✓';
-    color: var(--accent);
-    font-weight: bold;
-    margin-right: 0.5rem;
-  }
-
-  .download-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.8rem 2rem;
-    background: var(--gradient);
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    border: none;
-  }
-
-  .download-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-  }
-
-  .download-btn:hover::before {
-    left: 100%;
-  }
-
-  .download-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
-  }
-
-  /* Loadstring Tab */
-  .loadstring-container {
-    max-width: 800px;
-  }
-
-  .input-group {
-    margin-bottom: 2rem;
-  }
-
-  .input-label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-  }
-
-  .input-field {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--text-primary);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-  }
-
-  .input-field:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--glow);
-  }
-
-  .output-container {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-  }
-
-  .output-header {
-    background: var(--secondary-bg);
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .output-content {
-    padding: 1.5rem;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    color: #79c0ff;
-    min-height: 100px;
-    background: var(--primary-bg);
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1.5rem;
-    background: var(--gradient);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
-  }
-
-  .btn.secondary {
-    background: var(--card-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-  }
-
-  .btn.secondary:hover {
-    background: var(--secondary-bg);
-    border-color: var(--accent);
-  }
-
-  /* Saved Scripts */
-  .saved-scripts {
-    margin-top: 2rem;
-  }
-
-  .saved-scripts h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.3rem;
-  }
-
-  .scripts-list {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .script-item {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.3s ease;
-  }
-
-  .script-item:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 20px var(--glow);
-  }
-
-  .script-info {
-    flex: 1;
-  }
-
-  .script-name {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-  }
-
-  .script-url {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-family: 'Courier New', monospace;
-  }
-
-  .script-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .btn-small {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-
-  /* Mobile Responsive */
-  @media (max-width: 768px) {
-    .container {
-      flex-direction: column;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VIX Script Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#071019;
+      --panel:#0e1420;
+      --card:#0f1724;
+      --accent1:#00ffd1;
+      --accent2:#00a8ff;
+      --accent3:#ff6b6b;
+      --accent4:#ffd100;
+      --grad:linear-gradient(135deg,var(--accent1) 0%,var(--accent2) 100%);
+      --grad-danger:linear-gradient(135deg,#ff6b6b 0%,#ff3b3b 100%);
+      --grad-warning:linear-gradient(135deg,#ffd100 0%,#ff7a00 100%);
+      --grad-success:linear-gradient(135deg,#00ff88 0%,#00cc6a 100%);
+      --muted:#97a1b3;
+      --glass:rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      --radius:14px;
+      --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{
+      background:
+        radial-gradient(1400px 700px at 20% 90%, rgba(0,255,209,0.08), transparent 12%),
+        radial-gradient(1200px 600px at 80% 20%, rgba(0,168,255,0.06), transparent 12%),
+        radial-gradient(800px 400px at 50% 50%, rgba(255,107,107,0.02), transparent 8%),
+        var(--bg);
+      color:#e7f3ff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow:hidden;
+      animation: backgroundPulse 8s ease-in-out infinite alternate;
     }
 
+    @keyframes backgroundPulse {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(5deg) brightness(1.02); }
+    }
+
+    /* APP LAYOUT */
+    .app {
+      display:flex;
+      height:100vh;
+      gap:28px;
+      padding:28px;
+      align-items:stretch;
+      animation: slideInApp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    @keyframes slideInApp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SIDEBAR */
     .sidebar {
+      width:260px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:22px;
+      position:relative;
+      box-shadow: 
+        0 25px 80px rgba(4,8,16,0.8), 
+        inset 0 1px 0 rgba(255,255,255,0.03),
+        0 0 0 1px rgba(255,255,255,0.01);
+      display:flex;
+      flex-direction:column;
+      transition:var(--transition);
+      backdrop-filter: blur(20px);
+      animation: slideInLeft 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .logo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:10px;
+      user-select:none;
+      animation: logoGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoGlow {
+      0% { filter: drop-shadow(0 0 10px rgba(0,255,209,0.3)); }
+      100% { filter: drop-shadow(0 0 20px rgba(0,168,255,0.4)); }
+    }
+
+    .logo h1{
+      margin:0;font-size:30px;line-height:1;font-weight:900;
+      background:var(--grad); 
+      -webkit-background-clip:text; 
+      -webkit-text-fill-color:transparent;
+      letter-spacing:2px;
+      animation: textShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes textShimmer {
+      0%, 100% { background-position: -200% center; }
+      50% { background-position: 200% center; }
+    }
+
+    .logo h1 { background-size: 200% auto; }
+
+    .logo small{
+      color:var(--muted);
+      letter-spacing:1px;
+      font-weight:600;
+      animation: fadeInUp 1s ease 0.2s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+    .nav button{
+      display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:none;
+      color:var(--muted);background:transparent;cursor:pointer;font-weight:700;text-align:left;
+      transition:var(--transition);font-size:15px;position:relative;overflow:hidden;
+      animation: slideInButton 0.6s ease both;
+    }
+
+    .nav button:nth-child(1) { animation-delay: 0.1s; }
+    .nav button:nth-child(2) { animation-delay: 0.2s; }
+    .nav button:nth-child(3) { animation-delay: 0.3s; }
+    .nav button:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes slideInButton {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .nav button::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(0,255,210,0.1), rgba(0,168,255,0.1));
+      transition: width 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      z-index: -1;
+    }
+
+    .nav button .ico{
+      width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+      background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      font-size:18px;
+      transition:var(--transition);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+
+    .nav button:hover{
+      transform:translateX(8px) scale(1.02);
+      color:var(--accent1);
+    }
+
+    .nav button:hover::before { width: 100%; }
+
+    .nav button:hover .ico {
+      transform: scale(1.1) rotate(5deg);
+      background:linear-gradient(135deg, rgba(0,255,210,0.15), rgba(0,168,255,0.1));
+      box-shadow: 0 8px 20px rgba(0,255,210,0.2);
+    }
+
+    .nav button.active{
+      color:var(--accent1);
+      box-shadow:0 12px 40px rgba(0,255,210,0.15);
+      background:linear-gradient(135deg, rgba(0,255,210,0.08), rgba(0,168,255,0.05));
+      border:1px solid rgba(0,255,210,0.2);
+      transform: translateX(4px);
+    }
+
+    .nav button.active::before { width: 100%; }
+
+    .nav button.active .ico {
+      background:linear-gradient(135deg, rgba(0,255,210,0.2), rgba(0,168,255,0.15));
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0,255,210,0.3);
+    }
+
+    .sidebar .divider{
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      margin:18px 0;
+      border-radius:2px;
+      animation: fadeInUp 0.8s ease 0.6s both;
+    }
+
+    .footer-note{
+      margin-top:auto;
+      color:var(--muted);
+      font-size:13px;
+      animation: fadeInUp 0.8s ease 0.8s both;
+    }
+
+    /* MAIN */
+    .main{
+      flex:1; overflow:auto;padding:30px 10px 30px 0;
+      display:flex;flex-direction:column;
+      animation: slideInRight 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .header{text-align:center;margin-bottom:18px}
+    .header h2{
+      margin:0;font-size:40px;font-weight:800;color:var(--accent2);
+      text-shadow:0 12px 50px rgba(0,168,255,0.06);
+      transition:var(--transition);
+      animation: titleBounce 1s var(--bounce) 0.3s both;
+    }
+
+    @keyframes titleBounce {
+      from { opacity: 0; transform: translateY(-20px) scale(0.8); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .header p{
+      margin:8px 0 0;
+      color:var(--muted);
+      max-width:920px;
+      margin-left:auto;
+      margin-right:auto;
+      animation: fadeInUp 0.8s ease 0.5s both;
+    }
+
+    /* GRID & CARDS */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:22px;
+      align-content:start;
+    }
+
+    .card{
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:20px;
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 
+        0 25px 80px rgba(4,8,16,0.7),
+        inset 0 1px 0 rgba(255,255,255,0.02);
+      position:relative; 
+      overflow:hidden;
+      transform: translateY(0);
+      transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(0,255,210,0.03), transparent);
+      transition: transform 0.8s ease;
+      transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+
+    .card:hover::before {
+      transform: translateX(0) translateY(0) rotate(45deg);
+    }
+
+    .card:hover{ 
+      transform:translateY(-12px) scale(1.02);
+      box-shadow:
+        0 40px 120px rgba(4,8,16,0.8),
+        0 0 40px rgba(0,255,210,0.1);
+      border-color: rgba(0,255,210,0.2);
+    }
+
+    .badge{
+      width:56px;height:56px;border-radius:12px;display:grid;place-items:center;margin-right:14px;
+      background:linear-gradient(135deg, rgba(0,255,210,0.15), rgba(0,168,255,0.12));
+      box-shadow:0 12px 40px rgba(0,255,210,0.15);
+      font-size:22px;
+      transition:var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%) translateY(-100%) rotate(45deg);
+      transition: transform 0.6s ease;
+    }
+
+    .card:hover .badge {
+      transform: scale(1.1) rotate(-5deg);
+      box-shadow:0 16px 50px rgba(0,255,210,0.25);
+    }
+
+    .card:hover .badge::after {
+      transform: translateX(0) translateY(0) rotate(45deg);
+    }
+
+    .card h3{margin:0;font-size:18px;color:var(--accent1);font-weight:800}
+    .card p{color:var(--muted);line-height:1.5;margin-top:8px;margin-bottom:12px}
+    .features{list-style:none;padding:0;margin:12px 0 18px;color:var(--muted)}
+    .features li{display:flex;align-items:center;gap:8px;margin-bottom:8px;transition:var(--transition)}
+    .features li:hover{transform:translateX(4px);color:var(--accent1)}
+
+    .features .dot{
+      width:10px;height:10px;border-radius:50%;background:var(--accent1);display:inline-block;
+      box-shadow:0 8px 20px rgba(0,255,210,0.15);
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { transform: scale(1); box-shadow:0 8px 20px rgba(0,255,210,0.15); }
+      50% { transform: scale(1.2); box-shadow:0 8px 20px rgba(0,255,210,0.3); }
+    }
+
+    .btn{
+      display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;border:none;cursor:pointer;
+      background:var(--grad);color:#001021;font-weight:800;
+      box-shadow:0 16px 40px rgba(0,168,255,0.2);
+      transition:all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position:relative;overflow:hidden;text-decoration:none;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
       width: 100%;
-      padding: 1rem 0;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.6s ease;
     }
 
-    .nav-menu {
-      display: flex;
-      overflow-x: auto;
-      padding: 0 1rem;
-      gap: 0.5rem;
+    .btn:hover{
+      transform:translateY(-4px) scale(1.05);
+      box-shadow:0 25px 60px rgba(0,168,255,0.3);
     }
 
-    .nav-item {
-      flex-shrink: 0;
-      margin-bottom: 0;
+    .btn:hover::before { left: 100%; }
+
+    .btn:active { transform:translateY(-2px) scale(1.02); }
+
+    /* Button variants */
+    .btn-danger {
+      background: var(--grad-danger);
+      box-shadow:0 16px 40px rgba(255,107,107,0.2);
     }
 
-    .nav-link {
-      white-space: nowrap;
-      padding: 0.8rem 1rem;
+    .btn-danger:hover {
+      box-shadow:0 25px 60px rgba(255,107,107,0.3);
     }
 
-    .main-content {
-      padding: 1.5rem;
+    .btn-warning {
+      background: var(--grad-warning);
+      box-shadow:0 16px 40px rgba(255,165,0,0.2);
     }
 
-    .header h2 {
-      font-size: 2rem;
+    .btn-warning:hover {
+      box-shadow:0 25px 60px rgba(255,165,0,0.3);
     }
 
-    .executors-grid {
-      grid-template-columns: 1fr;
+    .btn-success {
+      background: var(--grad-success);
+      box-shadow:0 16px 40px rgba(0,255,136,0.2);
     }
-  }
-</style>
+
+    .btn-success:hover {
+      box-shadow:0 25px 60px rgba(0,255,136,0.3);
+    }
+
+    /* Social Buttons Styling */
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .social-btn:hover::before { left: 100%; }
+
+    .social-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      border-color: rgba(255,255,255,0.2);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .youtube-btn:hover {
+      background: rgba(255, 0, 0, 0.1);
+      border-color: rgba(255, 0, 0, 0.3);
+      color: #ff6b6b;
+      box-shadow: 0 8px 25px rgba(255, 0, 0, 0.2);
+    }
+
+    .discord-btn:hover {
+      background: rgba(114, 137, 218, 0.1);
+      border-color: rgba(114, 137, 218, 0.3);
+      color: #7289da;
+      box-shadow: 0 8px 25px rgba(114, 137, 218, 0.2);
+    }
+
+    .github-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+
+    .social-btn svg {
+      transition: transform 0.3s ease;
+    }
+
+    .social-btn:hover svg {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    /* FULLWIDE LOADSTRING */
+    .fullwide{grid-column:1 / -1}
+    .inputrow{display:flex;gap:12px;align-items:center;margin-top:12px}
+    .input{
+      flex:1;padding:14px 18px;border-radius:12px;
+      background:linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.05);color:var(--muted);font-size:14px;
+      transition:var(--transition);backdrop-filter:blur(10px);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent1);
+      box-shadow: 0 0 20px rgba(0,255,210,0.2);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .output{
+      margin-top:12px;padding:16px;
+      background:linear-gradient(145deg, rgba(0,0,0,0.4), rgba(0,0,0,0.3));
+      border-radius:12px;border:1px solid rgba(255,255,255,0.05);
+      font-family:monospace;color:#9be0ff;word-break:break-all;min-height:56px;
+      display:flex;align-items:center;backdrop-filter:blur(10px);
+      transition:var(--transition);
+    }
+
+    .output:hover {
+      border-color: rgba(0,255,210,0.3);
+      box-shadow: 0 0 20px rgba(0,255,210,0.1);
+    }
+
+    /* saved list */
+    .saved-list{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+    .saved-item{
+      display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:12px;
+      background:linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03);transition:var(--transition);
+      backdrop-filter:blur(10px);
+    }
+
+    .saved-item:hover {
+      transform: translateX(4px);
+      border-color: rgba(0,255,210,0.2);
+      box-shadow: 0 8px 25px rgba(0,255,210,0.1);
+    }
+
+    .saved-item .meta{max-width:78%}
+    .saved-item code{
+      display:block;color:#9be0ff;font-family:monospace;font-size:13px;word-break:break-all;
+      background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;margin-top:6px;
+    }
+
+    .saved-actions{display:flex;gap:8px}
+
+    /* HOME CARD */
+    .home-card{display:flex;gap:18px;align-items:flex-start}
+    .home-intro{max-width:760px;flex:1}
+    .home-intro h3{font-size:22px;margin-top:6px;color:var(--accent1)}
+    .home-intro p{color:var(--muted);line-height:1.6;margin-top:10px}
+    .home-cta{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+
+    /* loading overlay & spinner */
+    .loading{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.7);z-index:80;backdrop-filter:blur(12px);
+    }
+    .spinner{
+      width:100px;height:100px;border-radius:50%;
+      border:6px solid rgba(255,255,255,0.1);
+      border-top-color:var(--accent1);
+      animation:spin 1.2s linear infinite, spinnerGlow 2s ease-in-out infinite alternate;
+      box-shadow:0 0 60px rgba(0,255,210,0.3);
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinnerGlow{
+      from{
+        box-shadow:0 0 40px rgba(0,255,210,0.3);
+        border-top-color:var(--accent1);
+      } 
+      to{
+        box-shadow:0 0 80px rgba(0,168,255,0.4);
+        border-top-color:var(--accent2);
+      }
+    }
+
+    /* toast */
+    .toast{
+      position:fixed;right:26px;top:26px;
+      background:var(--grad);color:#001021;padding:16px 20px;border-radius:12px;font-weight:800;z-index:90;
+      box-shadow:0 20px 50px rgba(0,168,255,0.3);opacity:0;transform:translateY(-10px) scale(0.9);
+      animation:toastSlideIn .5s var(--bounce) forwards;backdrop-filter:blur(20px);
+    }
+    @keyframes toastSlideIn{
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    /* Enhanced emoji animations */
+    .emoji-bounce {
+      animation: emojiFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes emojiFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-3px) rotate(2deg); }
+      50% { transform: translateY(-5px) rotate(0deg); }
+      75% { transform: translateY(-3px) rotate(-2deg); }
+    }
+
+    /* animations for tab content appearance */
+    .fade-enter{opacity:0;transform:translateY(15px) scale(0.98)}
+    .fade-enter.show{
+      opacity:1;transform:translateY(0) scale(1);
+      transition:all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    /* Enhanced scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.01);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--accent1), var(--accent2));
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, var(--accent2), var(--accent1));
+    }
+
+    /* Stagger animations for cards */
+    .card:nth-child(1) { animation: cardSlideIn 0.6s ease 0.1s both; }
+    .card:nth-child(2) { animation: cardSlideIn 0.6s ease 0.2s both; }
+    .card:nth-child(3) { animation: cardSlideIn 0.6s ease 0.3s both; }
+    .card:nth-child(4) { animation: cardSlideIn 0.6s ease 0.4s both; }
+
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Pulse effect for interactive elements */
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 255, 209, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 255, 209, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 255, 209, 0); }
+    }
+
+    /* responsive */
+    @media (max-width:1000px){ 
+      .grid{grid-template-columns:1fr}
+      .home-cta{flex-direction:column}
+    }
+    @media (max-width:720px){
+      .app{padding:12px;flex-direction:column;height:auto}
+      .sidebar{width:100%;order:2}
+      .main{padding:20px 0}
+      body{overflow:auto}
+      .home-card{flex-direction:column;gap:14px}
+      .social-btn{font-size:13px;padding:10px 14px}
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <nav class="sidebar">
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" aria-label="menu">
       <div class="logo">
-        <h1>Vix</h1>
-        <div class="subtitle">Script Hub</div>
-      </div>
-      
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="#" class="nav-link active" data-tab="executors">
-            <span class="nav-icon">⚡</span>
-            Executores
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="scripts">
-            <span class="nav-icon">📜</span>
-            Scripts
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="loadstring">
-            <span class="nav-icon">🔗</span>
-            Loadstring
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    <main class="main-content">
-      <div class="header">
-        <h2 id="page-title">Executores</h2>
-        <p id="page-description">Os melhores executores para Roblox, sem travamentos e com máxima compatibilidade.</p>
+        <h1>VIX</h1>
+        <small>SCRIPT HUB</small>
       </div>
 
-      <!-- Executors Tab -->
-      <div id="executors" class="tab-content active">
-        <div class="executors-grid">
-          <div class="executor-card">
-            <div class="executor-header">
-              <div class="executor-icon">🔥</div>
-              <h3 class="executor-title">zClaw Executor</h3>
-            </div>
-            <p class="executor-description">O executor mais poderoso e confiável para Roblox. Sem travamentos, sem chaves, máxima compatibilidade.</p>
-            <ul class="features-list">
-              <li>100% UNC compatível</li>
-              <li>Sem necessidade de chaves</li>
-              <li>3 APIs principais integradas</li>
-              <li>Interface moderna e intuitiva</li>
-              <li>Zero travamentos garantido</li>
-            </ul>
-            <a href="https://oreofdev.github.io/Sw1ftSync/zclaw/" class="download-btn" target="_blank">
-              📥 Baixar zClaw
-            </a>
-          </div>
+      <nav class="nav" role="navigation">
+        <button class="active" data-tab="home"><span class="ico emoji-bounce">🏠</span>Home</button>
+        <button data-tab="executors"><span class="ico emoji-bounce">⚡</span>Executores</button>
+        <button data-tab="scripts"><span class="ico emoji-bounce">📜</span>Scripts</button>
+        <button data-tab="loadstring"><span class="ico emoji-bounce">🔗</span>Loadstring</button>
+      </nav>
 
-          <div class="executor-card">
-            <div class="executor-header">
-              <div class="executor-icon">🍎</div>
-              <h3 class="executor-title">Napple Executor</h3>
-            </div>
-            <p class="executor-description">O executor mais simples e leve para Roblox. Apenas 3MB, sem travamentos, sem chaves, com TuxAI integrado.</p>
-            <ul class="features-list">
-              <li>Apenas 3MB de tamanho</li>
-              <li>CloudyAPI com updates automáticos</li>
-              <li>TuxAI integrado</li>
-              <li>Interface ultra simples</li>
-              <li>Sem necessidade de chaves</li>
-            </ul>
-            <a href="https://oreofdev.github.io/Sw1ftSync/napple/" class="download-btn" target="_blank">
-              📥 Baixar Napple
-            </a>
-          </div>
-        </div>
-      </div>
+      <div class="divider"></div>
+      <div class="footer-note">Criado por Vix • Visual Moderno</div>
+    </aside>
 
-      <!-- Scripts Tab -->
-      <div id="scripts" class="tab-content">
-        <div class="executors-grid">
-          <div class="executor-card">
-            <div class="executor-header">
-              <div class="executor-icon">🧠</div>
-              <h3 class="executor-title">Vix Brainrot</h3>
-            </div>
-            <p class="executor-description">
-              Script oficial do Vix Brainrot para Roblox. Clique no botão abaixo para copiar o código.
-            </p>
-            <ul class="features-list">
-              <li>Atualizações automáticas via GitHub</li>
-              <li>Rápido e otimizado</li>
-              <li>Compatível com executores modernos</li>
-            </ul>
-            <button class="download-btn" onclick="copyToClipboard(`loadstring(game:HttpGet('https://raw.githubusercontent.com/vixscripter123/Vix-scipt/refs/heads/main/Vix%20scrip.lua'))()`)">
-              📋 Copiar Script
-            </button>
-          </div>
-        </div>
-      </div>
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <h2 id="page-title">Home</h2>
+        <p id="page-desc">Bem-vindo ao VIX Script Hub — gerador de loadstrings, lista de scripts e executores recomendados.</p>
+      </header>
 
-      <!-- Loadstring Tab -->
-      <div id="loadstring" class="tab-content">
-        <div class="loadstring-container">
-          <div class="input-group">
-            <label class="input-label">Cole a URL do script</label>
-            <input type="text" id="script-url" class="input-field" placeholder="https://exemplo.com/script.lua">
-          </div>
-          <button class="btn" onclick="generateLoadstring()">🔗 Gerar Loadstring</button>
-
-          <div class="output-container" style="margin-top: 2rem;">
-            <div class="output-header">
-              <span>Loadstring Gerado</span>
-              <button class="btn secondary" onclick="copyOutput()">📋 Copiar</button>
-            </div>
-            <div id="output" class="output-content">Aguardando URL...</div>
-          </div>
-
-          <button class="btn" onclick="saveScript()">💾 Salvar Script</button>
-
-          <div class="saved-scripts">
-            <h3>Scripts Salvos</h3>
-            <div id="scripts-list" class="scripts-list">
-              <p style="color: var(--text-muted);">Nenhum script salvo ainda.</p>
+      <section class="grid" id="content-grid">
+        <!-- HOME (visible by default) -->
+        <article id="home" class="card fullwide fade-enter show">
+          <div class="home-card">
+            <div class="badge" style="font-size:26px"><span class="emoji-bounce">✨</span></div>
+            <div class="home-intro">
+              <h3>Olá — Eu sou o Vix</h3>
+              <p>
+                Eu sou o Vix, programador e scripter — criador de scripts para Roblox e ferramentas para facilitar seu uso.
+                Aqui você pode baixar executores recomendados, copiar o script oficial e gerar loadstrings automaticamente a partir de um link raw.
+              </p>
+              <div class="home-cta">
+                <button class="btn pulse" data-tab-switch="loadstring"><span class="emoji-bounce">🔗</span> Gerar Loadstring</button>
+                <button class="btn btn-warning" data-tab-switch="scripts"><span class="emoji-bounce">📜</span> Script Oficial</button>
+              </div>
+              
+              <!-- Social Links Section -->
+              <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin: 0 0 14px 0; color: var(--accent1); font-size: 16px; font-weight: 700;">
+                  Conecte-se Comigo
+                </h4>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <a href="https://www.youtube.com/@viwScripter_11426" target="_blank" rel="noopener" 
+                     class="social-btn youtube-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    YouTube
+                  </a>
+                  <a href="https://discord.gg/eK4Y42YZPt" target="_blank" rel="noopener" 
+                     class="social-btn discord-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.0002 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1568 2.4189Z"/>
+                    </svg>
+                    Discord
+                  </a>
+                  <a href="https://github.com/vixscripter123" target="_blank" rel="noopener" 
+                     class="social-btn github-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                  </a>
+                </div>
+                <p style="margin: 12px 0 0 0; font-size: 13px; color: var(--muted); line-height: 1.4;">
+                  Siga meu canal para tutoriais e novidades, entre no Discord para suporte e acesse meu GitHub para códigos open source.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+
+        <!-- Executors -->
+        <article id="executors" class="card" style="display:none">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div class="badge"><span class="emoji-bounce">🔥</span></div>
+            <div style="flex:1">
+              <h3>zClaw Executor</h3>
+              <p>O executor mais poderoso e confiável para Roblox. Sem travamentos, sem chaves, máxima compatibilidade.</p>
+              <ul class="features">
+                <li><span class="dot"></span>100% UNC compatível</li>
+                <li><span class="dot"></span>Sem necessidade de chaves</li>
+                <li><span class="dot"></span>3 APIs integradas</li>
+                <li><span class="dot"></span>Interface moderna e intuitiva</li>
+                <li><span class="dot"></span>Zero travamentos garantido</li>
+              </ul>
+              <a class="btn btn-success" href="https://oreofdev.github.io/Sw1ftSync/zclaw/" target="_blank" rel="noopener"><span class="emoji-bounce">📥</span> Baixar zClaw</a>
+            </div>
+          </div>
+        </article>
+
+        <article id="executors-2" class="card" style="display:none">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div class="badge"><span class="emoji-bounce">🍎</span></div>
+            <div style="flex:1">
+              <h3>Napple Executor</h3>
+              <p>Executor leve, apenas 3MB, sem travamentos, sem chaves, com TuxAI integrado.</p>
+              <ul class="features">
+                <li><span class="dot"></span>Apenas 3MB de tamanho</li>
+                <li><span class="dot"></span>CloudyAPI com updates automáticos</li>
+                <li><span class="dot"></span>TuxAI integrado</li>
+                <li><span class="dot"></span>Interface ultra simples</li>
+                <li><span class="dot"></span>Sem necessidade de chaves</li>
+              </ul>
+              <a class="btn btn-warning" href="https://oreofdev.github.io/Sw1ftSync/napple/" target="_blank" rel="noopener"><span class="emoji-bounce">📥</span> Baixar Napple</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Scripts -->
+        <article id="scripts" class="card fullwide" style="display:none">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div class="badge"><span class="emoji-bounce">🧠</span></div>
+            <div style="flex:1">
+              <h3>Vix Brainrot — Script Oficial</h3>
+              <p>Script oficial do Vix Brainrot. Clique em copiar para pegar o loadstring padrão.</p>
+              <div style="margin-top:14px;display:flex;gap:10px">
+                <button id="copy-official" class="btn pulse"><span class="emoji-bounce">📋</span> Copiar Script Oficial</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Loadstring -->
+        <article id="loadstring" class="card fullwide" style="display:none">
+          <div>
+            <h3><span class="emoji-bounce">🔗</span> Gerar Loadstring</h3>
+            <p>Cole abaixo o <strong>link raw</strong> do arquivo .lua (por exemplo do raw do GitHub). O site monta automaticamente o loadstring.</p>
+
+            <div class="inputrow" style="margin-top:12px;">
+              <input id="input-link" class="input" type="text" placeholder="https://raw.githubusercontent.com/usuario/repo/branch/arquivo.lua" />
+              <button id="gen-btn" class="btn"><span class="emoji-bounce">🔗</span> Gerar</button>
+            </div>
+
+            <div id="output-box" class="output" style="margin-top:12px;">Aguardando URL...</div>
+
+            <div style="margin-top:12px;display:flex;gap:10px">
+              <button id="copy-output-btn" class="btn" style="display:none"><span class="emoji-bounce">📋</span> Copiar Loadstring</button>
+              <button id="save-output-btn" class="btn btn-warning" style="display:none"><span class="emoji-bounce">💾</span> Salvar Loadstring</button>
+            </div>
+
+            <div style="margin-top:18px;">
+              <h4 style="margin:0 0 8px 0;color:var(--muted)"><span class="emoji-bounce">💾</span> Scripts Salvos</h4>
+              <div id="saved-list" class="saved-list"></div>
+            </div>
+          </div>
+        </article>
+
+      </section>
     </main>
   </div>
 
-  <script>
-    // Troca de abas
-    const navLinks = document.querySelectorAll('.nav-link');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const pageTitle = document.getElementById('page-title');
-    const pageDescription = document.getElementById('page-description');
+  <!-- Loading + Toast wrapper -->
+  <div id="loading" class="loading"><div class="spinner"></div></div>
+  <div id="toast-wrap"></div>
 
-    const tabInfo = {
-      executors: {
-        title: "Executores",
-        desc: "Os melhores executores para Roblox, sem travamentos e com máxima compatibilidade."
-      },
-      scripts: {
-        title: "Scripts",
-        desc: "Scripts exclusivos prontos para você copiar e colar no executor."
-      },
-      loadstring: {
-        title: "Loadstring",
-        desc: "Cole a URL de um script e gere automaticamente o loadstring."
-      }
+  <script>
+    /* ------------------------
+       STATE & DOM REFS
+       ------------------------ */
+    const navButtons = document.querySelectorAll('.nav button');
+    const pageTitle = document.getElementById('page-title');
+    const pageDesc = document.getElementById('page-desc');
+
+    const tabsMeta = {
+      home: {title: 'Home', desc: 'Apresentação — Vix Script Hub'},
+      executors: {title: 'Executores', desc: 'Os melhores executores para Roblox, sem travamentos e com máxima compatibilidade.'},
+      scripts: {title: 'Scripts', desc: 'Scripts exclusivos prontos para você usar.'},
+      loadstring: {title: 'Loadstring', desc: 'Cole o link raw do script e gere o loadstring automaticamente.'}
     };
 
-    navLinks.forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const tab = link.getAttribute('data-tab');
+    const tabElements = {
+      home: document.getElementById('home'),
+      executors: document.getElementById('executors'),
+      executors2: document.getElementById('executors-2'),
+      scripts: document.getElementById('scripts'),
+      loadstring: document.getElementById('loadstring')
+    };
 
-        navLinks.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
+    const inputLink = document.getElementById('input-link');
+    const genBtn = document.getElementById('gen-btn');
+    const outputBox = document.getElementById('output-box');
+    const copyOutputBtn = document.getElementById('copy-output-btn');
+    const saveOutputBtn = document.getElementById('save-output-btn');
+    const savedListEl = document.getElementById('saved-list');
+    const loadingEl = document.getElementById('loading');
 
-        tabContents.forEach(c => c.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
+    /* saved loadstrings (usando armazenamento em memória) */
+    let savedScripts = [];
 
-        // Atualiza título e descrição
-        pageTitle.textContent = tabInfo[tab].title;
-        pageDescription.textContent = tabInfo[tab].desc;
+    /* ------------------------
+       ENHANCED ANIMATIONS
+       ------------------------ */
+    
+    // Add stagger animation to cards when they appear
+    function animateCards() {
+      const cards = document.querySelectorAll('.card:not(.fade-enter)');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px) scale(0.9)';
+        setTimeout(() => {
+          card.style.transition = 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0) scale(1)';
+        }, index * 100);
+      });
+    }
+
+    // Enhanced emoji floating animation
+    function addEmojiAnimations() {
+      const emojis = document.querySelectorAll('.emoji-bounce');
+      emojis.forEach((emoji, index) => {
+        emoji.style.animationDelay = `${index * 0.2}s`;
+      });
+    }
+
+    // Particle effect for buttons
+    function createParticles(element) {
+      for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        particle.style.background = 'var(--accent1)';
+        particle.style.borderRadius = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = '1000';
+        
+        const rect = element.getBoundingClientRect();
+        particle.style.left = (rect.left + rect.width / 2) + 'px';
+        particle.style.top = (rect.top + rect.height / 2) + 'px';
+        
+        document.body.appendChild(particle);
+        
+        const angle = (i / 6) * Math.PI * 2;
+        const velocity = 100;
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
+        
+        particle.animate([
+          { 
+            transform: 'translate(0, 0) scale(1)', 
+            opacity: 1 
+          },
+          { 
+            transform: `translate(${vx}px, ${vy}px) scale(0)`, 
+            opacity: 0 
+          }
+        ], {
+          duration: 600,
+          easing: 'cubic-bezier(0.165, 0.84, 0.44, 1)'
+        }).addEventListener('finish', () => {
+          particle.remove();
+        });
+      }
+    }
+
+    // Enhanced button interactions
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'translateY(-4px) scale(1.05)';
+      });
+      
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translateY(0) scale(1)';
+      });
+      
+      btn.addEventListener('click', (e) => {
+        createParticles(btn);
+        btn.style.transform = 'translateY(-2px) scale(1.02)';
+        setTimeout(() => {
+          btn.style.transform = 'translateY(-4px) scale(1.05)';
+        }, 150);
       });
     });
 
-    // Função para copiar texto para clipboard
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showNotification('Script copiado para a área de transferência!');
-      }).catch(err => {
-        console.error('Erro ao copiar:', err);
-        showNotification('Erro ao copiar script', 'error');
+    /* ------------------------
+       TAB SWITCHING (Home default)
+       ------------------------ */
+    function setActiveNav(btn){
+      navButtons.forEach(b => b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+    }
+
+    navButtons.forEach((btn, index) => {
+      btn.addEventListener('click', (e) => {
+        const tab = btn.getAttribute('data-tab');
+        switchToTab(tab);
+        setActiveNav(btn);
+        
+        // Add ripple effect
+        const ripple = document.createElement('div');
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.background = 'rgba(0, 255, 209, 0.3)';
+        ripple.style.transform = 'scale(0)';
+        ripple.style.animation = 'ripple 0.6s linear';
+        ripple.style.left = '50%';
+        ripple.style.top = '50%';
+        ripple.style.width = '20px';
+        ripple.style.height = '20px';
+        ripple.style.marginLeft = '-10px';
+        ripple.style.marginTop = '-10px';
+        
+        btn.style.position = 'relative';
+        btn.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 600);
       });
-    }
+    });
 
-    // Função para gerar loadstring
-    function generateLoadstring() {
-      const url = document.getElementById('script-url').value;
-      const output = document.getElementById('output');
-      
-      if (!url) {
-        output.textContent = 'Por favor, insira uma URL válida.';
-        return;
-      }
-
-      const loadstring = `loadstring(game:HttpGet('${url}'))()`;
-      output.textContent = loadstring;
-    }
-
-    // Função para copiar output
-    function copyOutput() {
-      const output = document.getElementById('output').textContent;
-      if (output && output !== 'Aguardando URL...' && output !== 'Por favor, insira uma URL válida.') {
-        copyToClipboard(output);
-      } else {
-        showNotification('Nenhum loadstring para copiar', 'error');
-      }
-    }
-
-    // Sistema de scripts salvos (usando memória)
-    let savedScripts = [];
-
-    function saveScript() {
-      const url = document.getElementById('script-url').value;
-      const output = document.getElementById('output').textContent;
-      
-      if (!url || !output || output === 'Aguardando URL...' || output === 'Por favor, insira uma URL válida.') {
-        showNotification('Gere um loadstring primeiro', 'error');
-        return;
-      }
-
-      const scriptName = prompt('Digite um nome para o script:');
-      if (!scriptName) return;
-
-      const script = {
-        name: scriptName,
-        url: url,
-        loadstring: output,
-        date: new Date().toLocaleDateString()
-      };
-
-      savedScripts.push(script);
-      updateScriptsList();
-      showNotification('Script salvo com sucesso!');
-    }
-
-    function updateScriptsList() {
-      const scriptsList = document.getElementById('scripts-list');
-      
-      if (savedScripts.length === 0) {
-        scriptsList.innerHTML = '<p style="color: var(--text-muted);">Nenhum script salvo ainda.</p>';
-        return;
-      }
-
-      scriptsList.innerHTML = savedScripts.map((script, index) => `
-        <div class="script-item">
-          <div class="script-info">
-            <div class="script-name">${script.name}</div>
-            <div class="script-url">${script.url}</div>
-          </div>
-          <div class="script-actions">
-            <button class="btn secondary btn-small" onclick="copyToClipboard('${script.loadstring}')">📋 Copiar</button>
-            <button class="btn secondary btn-small" onclick="deleteScript(${index})">🗑️ Excluir</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function deleteScript(index) {
-      if (confirm('Tem certeza que deseja excluir este script?')) {
-        savedScripts.splice(index, 1);
-        updateScriptsList();
-        showNotification('Script excluído');
-      }
-    }
-
-    // Sistema de notificações
-    function showNotification(message, type = 'success') {
-      const notification = document.createElement('div');
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'error' ? '#ff4444' : '#00d4ff'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 600;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-      `;
-      notification.textContent = message;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-      }, 3000);
-    }
-
-    // Adicionar CSS para animações das notificações
+    // Add ripple animation keyframe
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
       }
     `;
     document.head.appendChild(style);
+
+    // quick helpers for home CTA buttons
+    document.querySelectorAll('[data-tab-switch]').forEach(b => {
+      b.addEventListener('click', (e) => {
+        const t = b.getAttribute('data-tab-switch');
+        const navBtn = Array.from(navButtons).find(n => n.getAttribute('data-tab') === t);
+        if(navBtn) navBtn.click();
+      });
+    });
+
+    function hideAllTabs(){
+      Object.values(tabElements).forEach(el => { 
+        if(el) {
+          el.style.display = 'none';
+          el.classList.remove('show');
+        }
+      });
+    }
+
+    function switchToTab(tab){
+      hideAllTabs();
+      
+      // Add fade animation
+      setTimeout(() => {
+        if(tab === 'executors'){
+          tabElements.executors.style.display = '';
+          tabElements.executors2.style.display = '';
+          tabElements.executors.classList.add('fade-enter');
+          tabElements.executors2.classList.add('fade-enter');
+          setTimeout(() => {
+            tabElements.executors.classList.add('show');
+            tabElements.executors2.classList.add('show');
+          }, 50);
+        } else if(tab === 'scripts'){
+          tabElements.scripts.style.display = '';
+          tabElements.scripts.classList.add('fade-enter');
+          setTimeout(() => tabElements.scripts.classList.add('show'), 50);
+        } else if(tab === 'loadstring'){
+          tabElements.loadstring.style.display = '';
+          tabElements.loadstring.classList.add('fade-enter');
+          setTimeout(() => tabElements.loadstring.classList.add('show'), 50);
+        } else {
+          tabElements.home.style.display = '';
+          tabElements.home.classList.add('fade-enter');
+          setTimeout(() => tabElements.home.classList.add('show'), 50);
+        }
+      }, 100);
+      
+      pageTitle.textContent = tabsMeta[tab].title;
+      pageDesc.textContent = tabsMeta[tab].desc;
+      
+      // Animate title
+      pageTitle.style.transform = 'translateY(-20px) scale(0.8)';
+      pageTitle.style.opacity = '0';
+      setTimeout(() => {
+        pageTitle.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        pageTitle.style.transform = 'translateY(0) scale(1)';
+        pageTitle.style.opacity = '1';
+      }, 200);
+    }
+
+    // initial: show home
+    switchToTab('home');
+
+    /* ------------------------
+       LOADING & TOAST
+       ------------------------ */
+    function setLoading(on){
+      loadingEl.style.display = on ? 'flex' : 'none';
+      if(on) {
+        loadingEl.style.opacity = '0';
+        setTimeout(() => {
+          loadingEl.style.transition = 'opacity 0.3s ease';
+          loadingEl.style.opacity = '1';
+        }, 50);
+      }
+    }
+
+    function toast(msg, ms = 2200){
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `<span class="emoji-bounce">✅</span> ${msg}`;
+      document.body.appendChild(t);
+      
+      setTimeout(()=>{ 
+        t.style.opacity = '0'; 
+        t.style.transform = 'translateY(-10px) scale(0.9)'; 
+      }, ms);
+      setTimeout(()=>t.remove(), ms + 350);
+    }
+
+    /* ------------------------
+       CLIPBOARD
+       ------------------------ */
+    async function copyToClipboard(text){
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Copiado para a área de transferência!');
+      } catch (e) {
+        console.error('Clipboard error', e);
+        toast('Falha ao copiar', 1600);
+      }
+    }
+
+    /* ------------------------
+       SCRIPT OFFICIAL BUTTON
+       ------------------------ */
+    document.getElementById('copy-official').addEventListener('click', () => {
+      const official = "loadstring(game:HttpGet('https://raw.githubusercontent.com/vixscripter123/Vix-scipt/refs/heads/main/Vix%20scrip.lua'))()";
+      copyToClipboard(official);
+    });
+
+    /* ------------------------
+       RENDER SAVED LIST
+       ------------------------ */
+    function renderSavedList(){
+      savedListEl.innerHTML = '';
+      if(!savedScripts.length){
+        const p = document.createElement('div');
+        p.style.color = 'var(--muted)';
+        p.style.textAlign = 'center';
+        p.style.padding = '20px';
+        p.innerHTML = '<span class="emoji-bounce">📝</span> Nenhum loadstring salvo.';
+        savedListEl.appendChild(p);
+        return;
+      }
+
+      // show latest first
+      savedScripts.slice().reverse().forEach((ls, revIdx) => {
+        const realIndex = savedScripts.length - 1 - revIdx;
+        const item = document.createElement('div');
+        item.className = 'saved-item';
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.style.fontWeight = '700';
+        title.style.color = 'var(--accent1)';
+        title.innerHTML = `<span class="emoji-bounce">📜</span> Loadstring #${realIndex + 1}`;
+        const code = document.createElement('code');
+        code.textContent = ls;
+        meta.appendChild(title);
+        meta.appendChild(code);
+
+        const actions = document.createElement('div');
+        actions.className = 'saved-actions';
+
+        const btnCopy = document.createElement('button');
+        btnCopy.className = 'btn';
+        btnCopy.style.padding = '8px 12px';
+        btnCopy.innerHTML = '<span class="emoji-bounce">📋</span> Copiar';
+        btnCopy.addEventListener('click', () => {
+          copyToClipboard(ls);
+          createParticles(btnCopy);
+        });
+
+        const btnDelete = document.createElement('button');
+        btnDelete.className = 'btn btn-danger';
+        btnDelete.style.padding = '8px 12px';
+        btnDelete.innerHTML = '<span class="emoji-bounce">🗑️</span> Excluir';
+        btnDelete.addEventListener('click', () => {
+          if(confirm('Excluir este loadstring salvo?')){
+            // Animate removal
+            item.style.transform = 'translateX(-100px) scale(0.8)';
+            item.style.opacity = '0';
+            setTimeout(() => {
+              savedScripts.splice(realIndex, 1);
+              renderSavedList();
+              toast('Loadstring excluído');
+            }, 300);
+          }
+        });
+
+        actions.appendChild(btnCopy);
+        actions.appendChild(btnDelete);
+
+        item.appendChild(meta);
+        item.appendChild(actions);
+        savedListEl.appendChild(item);
+
+        // Animate in
+        setTimeout(() => {
+          item.style.transition = 'all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)';
+          item.style.opacity = '1';
+          item.style.transform = 'translateY(0)';
+        }, revIdx * 100);
+      });
+    }
+
+    renderSavedList();
+
+    /* ------------------------
+       GENERATE LOADSTRING (uses pasted link)
+       ------------------------ */
+    genBtn.addEventListener('click', async () => {
+      const raw = (inputLink.value || '').trim();
+      if(!raw){
+        outputBox.innerHTML = '<span class="emoji-bounce">⚠️</span> Por favor, cole um link válido (raw do GitHub ou URL direta para o .lua).';
+        copyOutputBtn.style.display = 'none';
+        saveOutputBtn.style.display = 'none';
+        return;
+      }
+
+      // Enhanced loading animation
+      setLoading(true);
+      
+      // Animate input
+      inputLink.style.transform = 'scale(0.98)';
+      inputLink.style.opacity = '0.7';
+      
+      await new Promise(r => setTimeout(r, 800));
+      setLoading(false);
+
+      // Reset input
+      inputLink.style.transform = 'scale(1)';
+      inputLink.style.opacity = '1';
+
+      // escape single quotes to avoid breaking lua string literal
+      const safe = raw.replace(/'/g, "\\'");
+      const loadstring = `loadstring(game:HttpGet('${safe}'))()`;
+
+      outputBox.innerHTML = `<span class="emoji-bounce">✅</span> ${loadstring}`;
+      
+      // Animate output
+      outputBox.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        outputBox.style.transition = 'all 0.3s ease';
+        outputBox.style.transform = 'scale(1)';
+      }, 50);
+      
+      copyOutputBtn.style.display = '';
+      saveOutputBtn.style.display = '';
+      
+      // Add pulse effect to buttons
+      [copyOutputBtn, saveOutputBtn].forEach(btn => {
+        btn.classList.add('pulse');
+        setTimeout(() => btn.classList.remove('pulse'), 2000);
+      });
+    });
+
+    // allow Enter key with animation
+    inputLink.addEventListener('keydown', (e) => { 
+      if(e.key === 'Enter') {
+        inputLink.style.transform = 'scale(1.02)';
+        setTimeout(() => {
+          inputLink.style.transform = 'scale(1)';
+          genBtn.click();
+        }, 100);
+      }
+    });
+
+    // Enhanced input focus effects
+    inputLink.addEventListener('focus', () => {
+      inputLink.style.transform = 'scale(1.02)';
+    });
+    
+    inputLink.addEventListener('blur', () => {
+      inputLink.style.transform = 'scale(1)';
+    });
+
+    // copy generated
+    copyOutputBtn.addEventListener('click', () => {
+      const text = outputBox.textContent.replace('✅ ', '');
+      if(!text || text.startsWith('Por favor') || text.startsWith('Aguardando') || text.startsWith('⚠️')) {
+        toast('Nenhum loadstring para copiar', 1600);
+        return;
+      }
+      copyToClipboard(text);
+    });
+
+    // save generated
+    saveOutputBtn.addEventListener('click', () => {
+      const text = outputBox.textContent.replace('✅ ', '');
+      if(!text || text.startsWith('Por favor') || text.startsWith('Aguardando') || text.startsWith('⚠️')) {
+        toast('Gere um loadstring primeiro', 1600);
+        return;
+      }
+      savedScripts.push(text);
+      renderSavedList();
+      toast('Loadstring salvo!');
+    });
+
+    /* ------------------------
+       Initialize animations
+       ------------------------ */
+    addEmojiAnimations();
+    
+    // Setup export/import event listeners
+    exportBtn.addEventListener('click', () => {
+      createParticles(exportBtn);
+      exportSavedScripts();
+    });
+
+    importBtn.addEventListener('click', () => {
+      createParticles(importBtn);
+      importInput.click();
+    });
+
+    importInput.addEventListener('change', importSavedScripts);
+    
+    // Add intersection observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe all cards for scroll animations
+    document.querySelectorAll('.card').forEach(card => {
+      observer.observe(card);
+    });
+
+    /* ------------------------
+       Ensure initial UI state
+       ------------------------ */
+    copyOutputBtn.style.display = 'none';
+    saveOutputBtn.style.display = 'none';
+
+    // Enhanced keyboard accessibility
+    document.querySelectorAll('.nav button').forEach(b => {
+      b.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' ') { 
+          e.preventDefault(); 
+          b.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            b.style.transform = 'scale(1)';
+            b.click();
+          }, 150);
+        }
+      });
+    });
   </script>
 </body>
 </html>
